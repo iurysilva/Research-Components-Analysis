@@ -35,13 +35,16 @@ ax.set_ylabel('Atributo 2')
 ax.set_zlabel('Iris')
 plt.show()
 
-
-x_treino, x_teste, y_treino, y_teste = train_test_split(x_transformed, y, test_size=0.3)
-rede_neural = neural_network.MLPClassifier(hidden_layer_sizes=100, random_state=1, max_iter=500,
-                                           activation='logistic')
-rede_neural.fit(x_treino, y_treino)
-saidas = rede_neural.predict(x_teste)
-print(saidas)
-print(y_teste)
-print('---------')
-print(rede_neural.score(x_teste, y_teste))
+acuracias = np.array([])
+for i in range(1):
+    x_treino, x_teste, y_treino, y_teste = train_test_split(x_transformed, y, test_size=0.3)
+    rede_neural = neural_network.MLPClassifier(hidden_layer_sizes=100, random_state=1, max_iter=500,
+                                               activation='logistic')
+    rede_neural.fit(x_treino, y_treino)
+    saidas = rede_neural.predict(x_teste)
+    print(saidas)
+    print(y_teste)
+    print('---------')
+    print(rede_neural.score(x_teste, y_teste))
+    acuracias = np.append(acuracias, rede_neural.score(x_teste, y_teste))
+print(acuracias.mean())
