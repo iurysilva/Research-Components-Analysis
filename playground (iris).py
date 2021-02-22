@@ -1,16 +1,17 @@
 import numpy as np
-from sklearn import decomposition
 from sklearn import datasets
 from sklearn import neural_network
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from PIL import Image
+from Objects import PCA
+
 
 iris = datasets.load_iris()
 x = iris.data
 y = iris.target
-pca = decomposition.PCA(n_components=2)
+pca = PCA(2)
 pca.fit(x)
 x_transformed = pca.transform(x)
 x_real = x_transformed[:, 0]
