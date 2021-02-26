@@ -7,11 +7,11 @@ from sklearn import neural_network
 from sklearn.model_selection import train_test_split
 from sklearn import decomposition
 
-width = 60
-height = 60
+width = 90
+height = 112
 dir = "images"
-begin = 1
-finish = 1
+begin = 6
+finish = 6
 
 images_dataset = np.zeros(((finish-begin+1)*10, height*width))
 target = []
@@ -27,13 +27,22 @@ for directory_name in range(begin, finish+1):
         insert += 1
         target += [directory_name]
 acuracias = []
-#pca = PCA(4)
-pca2 = decomposition.PCA(4)
-data_transformed_2 = pca2.fit_transform(images_dataset)
+#pca = PCA(10)
 #pca.fit(images_dataset)
 #data_transformed = pca.transform(images_dataset)
-#plt.imshow(pca.components[0].reshape(height, width), 'gray')
-plt.imshow(pca2.components_[0].reshape(height, width), 'gray')
+pca2 = decomposition.PCA(n_components=10)
+data_transformed_2 = pca2.fit_transform(images_dataset)
+fig = plt.figure()
+'''
+for i in range(1, 11):
+    fig.add_subplot(2, 5, i)
+    plt.imshow(pca2.components_[i-1].reshape(height, width), 'gray')
+'''
+a = []
+for i in pca2.explained_variance_ratio_:
+    a.append(i)
+plt.plot([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], a, '-ro', linewidth=2)
+plt.xticks([1,2,3,4,5,6,7,8,9,10])
 '''
 for i in range(1):
     rede_neural = neural_network.MLPClassifier(hidden_layer_sizes=100, random_state=1, max_iter=200,
