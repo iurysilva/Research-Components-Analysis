@@ -54,8 +54,8 @@ while True:
     magnitude_spectrum = 20 * np.log(cv2.magnitude(reverse_image[:, :, 0], reverse_image[:, :, 1]))
     a = magnitude_spectrum
     magnitude_spectrum = np.asanyarray(magnitude_spectrum, dtype=np.uint8)
-    # cv2.imshow('frame', magnitude_spectrum)
+    cv2.imshow('frame', magnitude_spectrum)
 
 cap.release()
 cv2.destroyAllWindows()
-plt.imshow(a, 'gray')
+#plt.imshow(a, 'gray')
