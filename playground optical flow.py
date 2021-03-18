@@ -9,7 +9,9 @@ lk_params = dict(winSize=(50, 50),
                  maxLevel=20,
                  criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
-#mouse function
+# mouse function
+
+
 def select_point(event, x, y, flags, params):
     global point, point_selected, old_points
     if event == cv2.EVENT_LBUTTONDOWN:
