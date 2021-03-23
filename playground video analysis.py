@@ -33,6 +33,7 @@ def lowpass_filter(frame):
     return mask
 
 a = 0
+stop = True
 while True:
     ret, frame = cap.read()
     if (cv2.waitKey(1) and 0xFF == ord('q')) or ret is False:
@@ -46,16 +47,19 @@ while True:
     filtered_frame = filtered_frame * high_filter
     filter = 20 * np.log(cv2.magnitude(filtered_frame[:, :, 0], filtered_frame[:, :, 1]))
     filter = np.asanyarray(filter, dtype=np.uint8)
-    phase_spectrum = np.angle(frame_shift)
+    phase_spectrum = np.angle(filtered_frame)[:, :, 0]
 
     # reversing
     reverse_shift = np.fft.ifftshift(filtered_frame)
     reverse_image = cv2.idft(reverse_shift)
-    magnitude_spectrum = 20 * np.log(cv2.magnitude(reverse_image[:, :, 0], reverse_image[:, :, 1]))
-    a = magnitude_spectrum
-    magnitude_spectrum = np.asanyarray(magnitude_spectrum, dtype=np.uint8)
-    cv2.imshow('frame', magnitude_spectrum)
+    result = 20 * np.log(cv2.magnitude(reverse_image[:, :, 0], reverse_image[:, :, 1]))
+    result = cv2.normalize(result, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
+
+    # amplitude of the result image
+    result_amplitude = 20 * np.log(cv2.magnitude(filtered_frame[:, :, 0], filtered_frame[:, :, 1]))
+    result_amplitude = np.asanyarray(result_amplitude, dtype=np.uint8)
+    cv2.imshow('frame', result)
 
 cap.release()
 cv2.destroyAllWindows()
-#plt.imshow(a, 'gray')
+
