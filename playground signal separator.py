@@ -4,6 +4,33 @@ import librosa.display
 import matplotlib.pyplot as plt
 from scipy import signal
 from sklearn.decomposition import FastICA
+from scipy.signal import lfilter
+from scipy import linalg
+
+
+def return_mask(half_life, half_lives_per_mask, max_mask_lenght):
+    mask_lenght = min(half_lives_per_mask*half_life, max_mask_lenght)
+    print('Retornando máscara para Complexity Pursuit com tamanho: ', mask_lenght)
+    mask = (2**(1/half_life))**(np.arange(mask_lenght - 1))
+    mask = mask/(np.sum(np.abs(mask[1:])))
+    mask[0] = -1
+    return mask
+
+
+def apply_BSS(principal_components):
+    print('Applying BSS')
+    short_mask = return_mask(1.0, 8, 500)
+    long_mask = return_mask(900000.0, 8, 500)
+    print('Calculando filtros')
+    short_filter = lfilter(short_mask, 1, principal_components)
+    long_filter = lfilter(long_mask, 1, principal_components)
+    print('Calculando matrizes de covariância')
+    short_cov = np.cov(short_filter)
+    long_cov = np.cov(long_filter)
+    print('Calculando Auto Valores e Auto Vetores')
+    eigen_values, eigen_vectors = linalg.eig(short_cov, long_cov)
+    return eigen_values, eigen_vectors
+
 
 n_samples = 2000
 time = np.linspace(0, 8, n_samples)
@@ -16,9 +43,10 @@ signals += 0.2 * np.random.normal(size=signals.shape)
 signals /= signals.std(axis=0)
 A = np.array([[1, 1, 1], [0.5, 2, 1], [1.5, 1, 2]])
 X = np.dot(signals, A.T)
-print(X)
-ica = FastICA(n_components=3)
-result = ica.fit_transform(X)
+print(X.shape)
+autovalores, result = apply_BSS(X.T)
+print(result)
+result = np.dot(X, result)
 fig, ax = plt.subplots(7, 1)
 fig.tight_layout()
 
