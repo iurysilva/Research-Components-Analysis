@@ -1,6 +1,4 @@
-import librosa
 import numpy as np
-import librosa.display
 import matplotlib.pyplot as plt
 from scipy import signal
 from sklearn.decomposition import FastICA
@@ -10,26 +8,31 @@ from scipy import linalg
 
 def return_mask(half_life, half_lives_per_mask, max_mask_lenght):
     mask_lenght = min(half_lives_per_mask*half_life, max_mask_lenght)
-    print('Retornando máscara para Complexity Pursuit com tamanho: ', mask_lenght)
-    mask = (2**(1/half_life))**(np.arange(mask_lenght - 1))
-    mask = mask/(np.sum(np.abs(mask[1:])))
+    print('Returning mask for Complexity Pursuit with size: ', mask_lenght)
+    mask = (2**(-1/half_life))**np.arange(0, mask_lenght).T
+    mask[0] = 0
+    mask = mask/(np.sum(np.abs(mask)))
     mask[0] = -1
     return mask
 
 
-def apply_BSS(principal_components):
+def apply_BSS(components):
     print('Applying BSS')
-    short_mask = return_mask(1.0, 8, 500)
-    long_mask = return_mask(900000.0, 8, 500)
-    print('Calculando filtros')
-    short_filter = lfilter(short_mask, 1, principal_components)
-    long_filter = lfilter(long_mask, 1, principal_components)
-    print('Calculando matrizes de covariância')
-    short_cov = np.cov(short_filter)
-    long_cov = np.cov(long_filter)
-    print('Calculando Auto Valores e Auto Vetores')
-    eigen_values, eigen_vectors = linalg.eig(short_cov, long_cov)
-    return eigen_values, eigen_vectors
+    short_mask = return_mask(1.0, 10, 50)
+    long_mask = return_mask(900000.0, 10, 50)
+    print('calculating filters')
+    short_filter = lfilter(short_mask, 1, components, axis=0)
+    long_filter = lfilter(long_mask, 1, components, axis=0)
+    print('Calculating covariance matrix')
+    short_cov = np.cov(short_filter, bias=1, rowvar=False)
+    long_cov = np.cov(long_filter, bias=1, rowvar=False)
+    print('Calculating eigenvectors and eigenvalues')
+    eigen_values, mixture_matrix = linalg.eig(long_cov, short_cov)
+    print('mixing matrix shape: ', mixture_matrix.shape, '\n')
+    mixture_matrix = np.real(mixture_matrix)
+    unmixed = -np.matmul(components, mixture_matrix)
+    unmixed = -np.flip(unmixed, axis=1)
+    return mixture_matrix, unmixed
 
 
 n_samples = 2000
@@ -44,9 +47,8 @@ signals /= signals.std(axis=0)
 A = np.array([[1, 1, 1], [0.5, 2, 1], [1.5, 1, 2]])
 X = np.dot(signals, A.T)
 print(X.shape)
-autovalores, result = apply_BSS(X.T)
-print(result)
-result = np.dot(X, result)
+autovalores, result = apply_BSS(X)
+result = result
 fig, ax = plt.subplots(7, 1)
 fig.tight_layout()
 
